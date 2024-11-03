@@ -45,8 +45,8 @@ class MyWallpaperService : WallpaperService() {
             width = newWidth
             height = newHeight
             myTetrisGame.createMap(width, height)
-            Log.d("map",  myTetrisGame.listOfPositions.toString())
-            Log.d("MyWallpaperService", "Surface changed: $width x $height")
+//            Log.d("map",  myTetrisGame.listOfPositions.toString())
+//            Log.d("MyWallpaperService", "Surface changed: $width x $height")
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
@@ -56,77 +56,21 @@ class MyWallpaperService : WallpaperService() {
             if (visible) {
                 scope.coroutineContext.cancelChildren()
                 scope.launch {
-                    TetrisGame()
+                    myTetrisGame.tetrisGame(
+                        isVisible = isVisible,
+                        surfaceHolder = surfaceHolder
+                    )
                 }
             } else {
                 scope.coroutineContext.cancelChildren()
             }
         }
 
-        suspend fun TetrisGame() {
-            while(isVisible) {
-                draw()//lista figur
-                delay(1000)
-            }
-        }
-
-
         override fun onSurfaceDestroyed(holder: SurfaceHolder) {
             super.onSurfaceDestroyed(holder)
-            Log.d("MyWallpaperService", "Surface destroyed")
+//            Log.d("MyWallpaperService", "Surface destroyed")
             scope.cancel()
             isVisible = false
         }
-
-        fun draw() {
-            if (!isVisible) {
-                Log.d("MyWallpaperService", "Not visible, skipping draw")
-                return
-            }
-
-            val holder = surfaceHolder
-            var canvas: Canvas? = null
-
-            try {
-                canvas = holder.lockCanvas()
-                if (canvas != null) {
-
-                    canvas.drawColor(Color.Black.toArgb())
-
-                    if(!myTetrisGame.canUpdatePosition()) {
-                        if(!myTetrisGame.canDeleteRow()) {
-                            myTetrisGame.generateNewRectangle()
-                        }
-                    }
-
-                    myTetrisGame.refreshCanvas(canvas)
-                }
-            } catch (e: Exception) {
-                Log.e("MyWallpaperService", "Error during drawing", e)
-            } finally {
-                if (canvas != null) {
-                    try {
-                        holder.unlockCanvasAndPost(canvas)
-                    } catch (e: Exception) {
-                        Log.e("MyWallpaperService", "Error posting canvas", e)
-                    }
-                }
-            }
-        }
     }
 }
-
-
-
-// Rysuj tekst
-//                    canvas.drawText(
-//                        "Hello World!",
-//                        width / 2f,
-//                        height - 500.dp.value,
-//                        Paint().apply {
-//                            color = Color.White.toArgb()
-//                            textSize = 60f
-//                            textAlign = Paint.Align.CENTER
-//                            isAntiAlias = true
-//                            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-//                        })
